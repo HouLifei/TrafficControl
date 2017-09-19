@@ -1,26 +1,29 @@
 <template>
   <div class="topology-content">
     <h4>网络拓扑</h4>
-    <div ref="topology" id="topoloy"></div>
+    <div ref="topology" id="topology"></div>
   </div>
 </template>
 <script>
 import d3 from 'd3'
-import {wsTopoUrl} from '@/config'
+import config from '@/config'
+const width = 400
+const height = 600
+const force = d3.layout.force().linkDistance(150).charge(-600).size([width, height])
+const zoom = d3.behavior.zoom().scaleExtent([1, 3])
 export default {
   name: 'topology',
   data: function () {
     return {
-      topology: ''
     }
   },
   mounted: function () {
+    this.initTopology(this.$refs.topology)
     this.getTopology()
+    this.updateTopology()
   },
   methods: {
     getTopology: function () {
-      let id = this.$refs.topology
-      let showTopology = this.showTopology
       Promise.all([this.$ajax.get('/topology/switches'), this.$ajax.get('/topology/hosts'), this.$ajax.get('/topology/links')])
         .then(([switches, hosts, links]) => {
           const data = {nodes: [], links: []}
@@ -37,38 +40,39 @@ export default {
           for (let key of links.data) {
             data.links.push({source: nodeList.indexOf(key.src.dpid), target: nodeList.indexOf(key.dst.dpid), 'source_port': parseInt(key.src.port_no)})
           }
-          showTopology(id, data)
+          return data
+        }).then(data => {
+          this.showTopology(data)
         }).catch(function (error) {
           console.log(error)
         })
     },
-    showTopology: function (id, data) {
-      const width = 400
-      const height = 600
-      const force = d3.layout.force().nodes(data.nodes).links(data.links).linkDistance(150).charge(-600).size([width, height]).start()
-      const zoom = d3.behavior.zoom().scaleExtent([1, 3]).on('zoom', function () {
-        const e = d3.event
-        const tx = Math.min(0, Math.max(e.translate[0], width - width * e.scale))
-        const ty = Math.min(0, Math.max(e.translate[1], height - height * e.scale))
-        zoom.translate([tx, ty])
-        container.attr('transform', `translate( ${tx}, ${ty} ), scale( ${e.scale} )`)
-      })
+    initTopology: function (id) {
       const svg = d3.select(id).append('svg')
         .attr('width', width)
         .attr('height', height)
         .attr('viewBox', `0 0 ${width} ${height}`)
         .attr('preserveAspectRatio', 'xMidYMid meet')
         .call(zoom)
-
-      const container = svg.append('g')
-
-      const link = container.selectAll('line')
+      const container = this.container = svg.append('g')
+      zoom.on('zoom', function () {
+        const e = d3.event
+        const tx = Math.min(0, Math.max(e.translate[0], width - width * e.scale))
+        const ty = Math.min(0, Math.max(e.translate[1], height - height * e.scale))
+        zoom.translate([tx, ty])
+        container.attr('transform', `translate( ${tx}, ${ty} ), scale( ${e.scale} )`)
+      })
+    },
+    showTopology: function (data) {
+      force.nodes(data.nodes).links(data.links).start()
+      this.container.selectAll('*').remove()
+      const link = this.container.selectAll('line')
         .data(data.links)
         .enter().append('line')
         .style('stroke', '#000')
         .style('stroke-width', 1)
 
-      const node = container.selectAll('.port_name')
+      const node = this.container.selectAll('.port_name')
         .data(data.nodes)
         .enter().append('g')
         .attr({
@@ -105,7 +109,7 @@ export default {
           'fill': '#000',
           'font-size': '10px'
         })
-      let port = container.selectAll('.port')
+      const port = this.container.selectAll('.port')
         .data(data.links)
         .enter()
         .append('text')
@@ -157,24 +161,24 @@ export default {
       })
     },
     updateTopology: function () {
-      const socket = new WebSocket(wsTopoUrl)
+      const socket = new WebSocket(config.wsTopoUrl)
       socket.onopen = () => {
         console.log('socket open')
       }
       socket.onmessage = (e) => {
+        this.getTopology()
         const data = JSON.parse(e.data)
-        const result = {
+        socket.send({
           'id': data.id,
           'jsonrpc': data.jsonrpc,
           'result': ''
-        }
-        socket.send(result)
+        })
       }
       socket.onclose = () => {
         console.log('socket close')
       }
-      socket.onerror = (e) => {
-        console.log(e)
+      socket.onerror = () => {
+        console.log('error')
       }
     }
   }
