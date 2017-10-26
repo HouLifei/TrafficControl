@@ -7,7 +7,8 @@
 <script>
 import d3 from 'd3'
 import config from '@/config'
-const width = 400
+import swal from 'sweetalert'
+const width = 470
 const height = 600
 const force = d3.layout.force().linkDistance(150).charge(-600).size([width, height])
 const zoom = d3.behavior.zoom().scaleExtent([1, 3])
@@ -162,17 +163,28 @@ export default {
     },
     updateTopology: function () {
       const socket = new WebSocket(config.wsTopoUrl)
+      let timer = 0
       socket.onopen = () => {
         console.log('socket open')
       }
       socket.onmessage = (e) => {
-        this.getTopology()
         const data = JSON.parse(e.data)
-        socket.send({
+        if (timer !== 0) {
+          clearTimeout(timer)
+        }
+        timer = setTimeout(() => {
+          this.getTopology()
+          swal({
+            title: '注意',
+            text: '拓扑变更',
+            icon: 'warning'
+          })
+        }, 1000)
+        socket.send(JSON.stringify({
           'id': data.id,
           'jsonrpc': data.jsonrpc,
           'result': ''
-        })
+        }))
       }
       socket.onclose = () => {
         console.log('socket close')

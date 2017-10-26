@@ -25,8 +25,8 @@
                   <label for="protocol">Protocol</label>
                   <select id="protocol" v-bind:disabled="type === 'edit' ? true: false"  v-model.lazy="protocol">
                     <option value="*">*</option>
-                    <option value="http">TCP</option>
-                    <option value="tcp">UDP</option>
+                    <option value="tcp">TCP</option>
+                    <option value="udp">UDP</option>
                   </select>
                 </div>
               </div>
