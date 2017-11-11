@@ -84,7 +84,7 @@ export default {
           padding: 0 10px;
           color: #666666;
 
-          &::after{
+          &::after {
             position: absolute;
             left: 50%;
             margin-left: -7px;
@@ -104,7 +104,7 @@ export default {
 
           &.router-link-active {
             color: #0e90d2;
-            &::after{
+            &::after {
               opacity: 1;
               border-bottom-color: #0e90d2;
             }

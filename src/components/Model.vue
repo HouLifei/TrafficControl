@@ -23,8 +23,7 @@
                 </div>
                 <div class="column-4 input-group">
                   <label for="protocol">Protocol</label>
-                  <select id="protocol" v-bind:disabled="type === 'edit' ? true: false"  v-model.lazy="protocol">
-                    <option value="*">*</option>
+                  <select id="protocol" v-bind:disabled="type === 'edit' ? true: false">
                     <option value="tcp">TCP</option>
                     <option value="udp">UDP</option>
                   </select>
@@ -47,7 +46,11 @@
               <div class="row">
                 <div class="column-4 input-group">
                   <label for="priority">Priority</label>
-                  <input id="priority" v-verify:priority="priority" v-model.lazy="priority" type="number">
+                  <select id="priority">
+                    <option value="0">0</option>
+                    <option value="1">1</option>
+                    <option value="2">2</option>
+                  </select>
                 </div>
                 <div class="column-4 input-group">
                   <label for="bandwidth">Bandwidth</label>
@@ -70,8 +73,7 @@
   import swal from 'sweetalert'
   const match = {
     'ip': /^(?:(?:2[0-4][0-9]\.)|(?:25[0-5]\.)|(?:1[0-9][0-9]\.)|(?:[1-9][0-9]\.)|(?:[0-9]\.)){3}(?:(?:2[0-5][0-5])|(?:25[0-5])|(?:1[0-9][0-9])|(?:[1-9][0-9])|(?:[0-9]))$/,
-    'num': /^[1-9]\d*$/,
-    'priority': /^[1-7]$/
+    'num': /^[1-9]\d*$/
   }
   export default {
     name: 'model',
@@ -82,8 +84,8 @@
         dstIP: this.info['nw_dst'],
         srcPort: this.info['tp_src'],
         dstPort: this.info['tp_dst'],
-        protocol: this.info['tp_proto'],
-        priority: this.info['priority'],
+        protocol: this.info['tp_proto'] || 'tcp',
+        priority: this.info['priority'] || 0,
         bandwidth: this.info['bandwidth'],
         message: '匹配域为必填项，策略至少填写一个，其中优先级为1-7的整数，端口号和带宽均为整数',
         inputError: false
@@ -143,9 +145,6 @@
         }
         if (!match.num.test(this.dstPort)) {
           message += '目的端口输入不合法 '
-        }
-        if (!match.priority.test(this.priority)) {
-          message += '优先级输入不合法 '
         }
         if (!match.num.test(this.bandwidth)) {
           message += '带宽输入不合法 '
