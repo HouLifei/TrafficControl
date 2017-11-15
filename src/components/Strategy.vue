@@ -68,6 +68,10 @@
         this.showModel = true
       },
       deleteItem: function (item) {
+        swal('正在删除，请稍后', {
+          closeOnClickOutside: false,
+          button: false
+        })
         this.$ajax.post('/strategy/delete', item).then(res => {
           const result = res.data.result
           if (result === 'success') {
@@ -84,6 +88,7 @@
             })
           }
         }).catch(error => {
+          swal.close()
           console.log(error)
         })
       },

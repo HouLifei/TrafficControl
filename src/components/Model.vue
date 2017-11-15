@@ -23,9 +23,9 @@
                 </div>
                 <div class="column-4 input-group">
                   <label for="protocol">Protocol</label>
-                  <select id="protocol" v-bind:disabled="type === 'edit' ? true: false">
-                    <option value="tcp">TCP</option>
-                    <option value="udp">UDP</option>
+                  <select id="protocol" v-bind:disabled="type === 'edit' ? true: false" v-model="protocol">
+                    <option value="TCP">TCP</option>
+                    <option value="UDP">UDP</option>
                   </select>
                 </div>
               </div>
@@ -46,7 +46,7 @@
               <div class="row">
                 <div class="column-4 input-group">
                   <label for="priority">Priority</label>
-                  <select id="priority">
+                  <select id="priority" v-model="priority">
                     <option value="0">0</option>
                     <option value="1">1</option>
                     <option value="2">2</option>
@@ -73,7 +73,7 @@
   import swal from 'sweetalert'
   const match = {
     'ip': /^(?:(?:2[0-4][0-9]\.)|(?:25[0-5]\.)|(?:1[0-9][0-9]\.)|(?:[1-9][0-9]\.)|(?:[0-9]\.)){3}(?:(?:2[0-5][0-5])|(?:25[0-5])|(?:1[0-9][0-9])|(?:[1-9][0-9])|(?:[0-9]))$/,
-    'num': /^[1-9]\d*$/
+    'num': /^[0-9]\d*$/
   }
   export default {
     name: 'model',
@@ -103,6 +103,10 @@
         } else {
           this.inputError = false
           this.message = '匹配域为必填项，策略至少填写一个，其中优先级为1-7的整数，端口号和带宽均为整数'
+          swal('正在添加，请稍后', {
+            closeOnClickOutside: false,
+            button: false
+          })
           this.$ajax.post('/strategy/add', {
             'nw_src': this.srcIP,
             'nw_dst': this.dstIP,
@@ -128,6 +132,7 @@
               })
             }
           }).catch(error => {
+            swal.close()
             console.log(error)
           })
         }
