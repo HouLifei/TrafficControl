@@ -1,6 +1,6 @@
 <template>
   <div class="strategy-content">
-    <show-model v-if="showModel" v-bind:type="modelType" v-bind:info="selectedStrategy" v-on:close="close" v-on:refresh="getStrategy"></show-model>
+    <show-model v-if="showModel"  v-on:close="close" v-on:refresh="getStrategy"></show-model>
     <h4>流量策略</h4>
     <div class="btn-container">
         <button class="btn add right" v-on:click="addItem"><span class="icon-add"></span>添加</button>
@@ -28,7 +28,6 @@
               <td>{{ item.priority }}</td>
               <td>{{ item.bandwidth }}</td>
               <td>
-                <button class="btn edit small"  v-on:click="editItem(item)"><span class="icon-edit"></span></button>
                 <button class="btn delete small"  v-on:click="deleteItem(item)"><span class="icon-delete"></span></button>
               </td>
             </tr>
@@ -45,9 +44,7 @@
     data: function () {
       return {
         strategyList: [],
-        showModel: false,
-        modelType: '',
-        selectedStrategy: {}
+        showModel: false
       }
     },
     created: function () {
@@ -58,13 +55,6 @@
     },
     methods: {
       addItem: function () {
-        this.modelType = 'add'
-        this.selectedStrategy = {}
-        this.showModel = true
-      },
-      editItem: function (item) {
-        this.modelType = 'edit'
-        this.selectedStrategy = item
         this.showModel = true
       },
       deleteItem: function (item) {

@@ -15,15 +15,15 @@
               <div class="row">
                 <div class="column-4 input-group">
                   <label for="srcIP">Src IP</label>
-                  <input id="srcIP" v-verify:ip="srcIP"  v-bind:disabled="type === 'edit' ? true: false"   placeholder="0.0.0.0" v-model.lazy="srcIP"/>
+                  <input id="srcIP" v-verify:ip="srcIP" placeholder="0.0.0.0" v-model.lazy="srcIP"/>
                 </div>
                 <div class="column-4 input-group">
                   <label for="dstIP">Dst IP</label>
-                  <input id="dstIP" v-verify:ip="dstIP" v-bind:disabled="type === 'edit' ? true: false"   placeholder="0.0.0.0" v-model.lazy="dstIP"/>
+                  <input id="dstIP" v-verify:ip="dstIP"  placeholder="0.0.0.0" v-model.lazy="dstIP"/>
                 </div>
                 <div class="column-4 input-group">
                   <label for="protocol">Protocol</label>
-                  <select id="protocol" v-bind:disabled="type === 'edit' ? true: false" v-model="protocol">
+                  <select id="protocol" v-model="protocol">
                     <option value="TCP">TCP</option>
                     <option value="UDP">UDP</option>
                   </select>
@@ -33,11 +33,11 @@
               <div class="row">
                 <div class="column-4 input-group">
                   <label for="srcPort">Src Port</label>
-                  <input id="srcPort" v-verify:num="srcPort" v-bind:disabled="type === 'edit' ? true: false" placeholder="0" type="number" v-model.lazy="srcPort"/>
+                  <input id="srcPort" v-verify:num="srcPort" placeholder="0" type="number" v-model.lazy="srcPort"/>
                 </div>
                 <div class="column-4 input-group">
                   <label for="dstPort">Dst Port</label>
-                  <input id="dstPort" v-verify:num="dstPort" v-bind:disabled="type === 'edit' ? true: false"   placeholder="0" type="number" v-model.lazy="dstPort"/>
+                  <input id="dstPort" v-verify:num="dstPort" placeholder="0" type="number" v-model.lazy="dstPort"/>
                 </div>
               </div>
             </fieldset>
@@ -60,7 +60,7 @@
             </fieldset>
             <div class="prompt" v-bind:class="{error: inputError}">提示：{{ message }}</div>
             <div class="btn-group">
-              <button type="button" class="btn edit" v-on:click="addStrategy">{{ type === 'add'? '添加' : '修改'}}</button>
+              <button type="button" class="btn edit" v-on:click="addStrategy">添加</button>
               <button type="button" class="btn" v-on:click="close">取消</button>
             </div>
           </form>
@@ -77,17 +77,16 @@
   }
   export default {
     name: 'model',
-    props: ['type', 'info'],
     data: function () {
       return {
-        srcIP: this.info['nw_src'],
-        dstIP: this.info['nw_dst'],
-        srcPort: this.info['tp_src'],
-        dstPort: this.info['tp_dst'],
-        protocol: this.info['tp_proto'] || 'tcp',
-        priority: this.info['priority'] || 0,
-        bandwidth: this.info['bandwidth'],
-        message: '匹配域为必填项，策略至少填写一个，其中优先级为1-7的整数，端口号和带宽均为整数',
+        srcIP: '',
+        dstIP: '',
+        srcPort: 0,
+        dstPort: 0,
+        protocol: 'TCP',
+        priority: 0,
+        bandwidth: '',
+        message: '匹配域中源IP和目的IP为必填项，端口号为选填项，端口号和带宽均为整数',
         inputError: false
       }
     },
@@ -102,7 +101,7 @@
           this.message = message
         } else {
           this.inputError = false
-          this.message = '匹配域为必填项，策略至少填写一个，其中优先级为1-7的整数，端口号和带宽均为整数'
+          this.message = '匹配域中源IP和目的IP为必填项，端口号为选填项，端口号和带宽均为整数'
           swal('正在添加，请稍后', {
             closeOnClickOutside: false,
             button: false
