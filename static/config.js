@@ -1,5 +1,5 @@
-// var wsTopoUrl = 'ws://127.0.0.1:8080/v1.0/topology/ws'
-var wsTopoUrl = 'ws://202.117.15.78:8080/v1.0/topology/ws'
+var wsTopoUrl = 'ws://127.0.0.1:8080/v1.0/topology/ws'
+// var wsTopoUrl = 'ws://202.117.15.78:8080/v1.0/topology/ws'
 
 var switchMap = {
   '0000000000000001': 's1',
