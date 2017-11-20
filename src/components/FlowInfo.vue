@@ -7,17 +7,30 @@
           <thead>
           <tr>
             <td class="center">ID</td>
-            <td class="center">match</td>
-            <td class="center">action</td>
-            <td class="center">priority</td>
-            <td class="center">duration</td>
-            <td class="center">count</td>
+            <td class="center">匹配域</td>
+            <td class="center">动作</td>
+            <td class="center">优先级</td>
+            <td class="center">持续时间</td>
+            <td class="center">计数</td>
           </tr>
           </thead>
           <tbody>
           <tr v-for="(flow, index) in flowInfo">
             <td class="center">{{ index }}</td>
-            <td>{{ flow.match }}</td>
+            <td>
+              <template v-if="isEmptyObject(flow.match)">
+                通配
+              </template>
+              <template v-else>
+                <p v-if="flow.match.dl_src">源MAC: {{ flow.match.dl_src}}</p>
+                <p v-if="flow.match.dl_dst">目的MAC: {{ flow.match.dl_dst}}</p>
+                <p v-if="flow.match.nw_src">源IP: {{ flow.match.nw_src}}</p>
+                <p v-if="flow.match.nw_src">目的IP: {{ flow.match.nw_dst}}</p>
+                <p v-if="flow.match.tp_src">源端口: {{ flow.match.tp_src}}</p>
+                <p v-if="flow.match.tp_dst">目的端口: {{ flow.match.tp_dst}}</p>
+                <p v-if="flow.match.in_port">入端口: {{ flow.match.in_port}}</p>
+              </template>
+            </td>
             <td>{{ flow.actions }}</td>
             <td class="center">{{ flow.priority }}</td>
             <td class="center">{{ flow.duration_sec }}</td>
@@ -50,7 +63,7 @@
     mounted: function () {
       this.initChart()
       this.getFlow()
-      this.flowTimer = setInterval(() => this.getFlow(), 1000)
+      this.flowTimer = setInterval(() => this.getFlow(), 2000)
     },
     beforeDestroy: function () {
       clearInterval(this.flowTimer)
@@ -173,6 +186,9 @@
           })
         }
         this.flowBroken.setOption(optionBroken)
+      },
+      isEmptyObject (obj) {
+        return JSON.stringify(obj) === '{}'
       }
     }
   }

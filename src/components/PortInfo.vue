@@ -7,12 +7,12 @@
           <thead>
           <tr>
             <td class="am-text-center">ID</td>
-            <td>rx_packet</td>
-            <td>tx_packet</td>
-            <td>rx_byte</td>
-            <td>tx_byte</td>
-            <td>rx_drop</td>
-            <td>tx_drop</td>
+            <td>接收数据包</td>
+            <td>发送数据包</td>
+            <td>接收字节数</td>
+            <td>发送字节数</td>
+            <td>接收丢包数</td>
+            <td>发送丢包数</td>
           </tr>
           </thead>
           <tbody>

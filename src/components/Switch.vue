@@ -3,9 +3,12 @@
     <div class="device-content">
       <h4>交换机</h4>
       <template v-for="item in items">
-        <div class="device-item" v-on:click="toggle(item)">{{ item.dpid }} <span v-bind:class="item.show? 'icon-up': 'icon-down'"></span></div>
+        <div class="device-item" v-on:click="toggle(item)">{{ item.name }} <span v-bind:class="item.show? 'icon-up': 'icon-down'"></span></div>
         <table v-if="item.show" class="switch-table center">
           <thead>
+          <tr>
+            <td colspan="3">dpid: {{ item.dpid }}</td>
+          </tr>
           <tr>
             <td>端口ID</td>
             <td>端口名称</td>
@@ -41,6 +44,7 @@
           const data = res.data
           for (let key of data) {
             key.show = false
+            key.name = switchMap[key.dpid]
             this.items.push(key)
           }
         })

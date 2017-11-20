@@ -6,7 +6,6 @@
 </template>
 <script>
 import d3 from 'd3'
-import config from '@/config'
 import swal from 'sweetalert'
 const width = 470
 const height = 600
@@ -30,13 +29,15 @@ export default {
           const data = {nodes: [], links: []}
           const nodeList = []
           for (let key of switches.data) {
-            data.nodes.push({dpid: key.dpid, type: 'switch'})
+            data.nodes.push({dpid: key.dpid, type: 'switch', name: switchMap[key.dpid]})
             nodeList.push(key.dpid)
           }
           for (let key of hosts.data) {
-            data.nodes.push({mac: key.mac, type: 'host'})
-            nodeList.push(key.mac)
-            data.links.push({source: nodeList.indexOf(key.port.dpid), target: nodeList.indexOf(key.mac), source_port: parseInt(key.port.port_no)})
+            if (key.ipv4.length > 0) {
+              data.nodes.push({mac: key.mac, type: 'host', name: hostMap[key.ipv4[0]]})
+              nodeList.push(key.mac)
+              data.links.push({source: nodeList.indexOf(key.port.dpid), target: nodeList.indexOf(key.mac), source_port: parseInt(key.port.port_no)})
+            }
           }
           for (let key of links.data) {
             data.links.push({source: nodeList.indexOf(key.src.dpid), target: nodeList.indexOf(key.dst.dpid), 'source_port': parseInt(key.src.port_no)})
@@ -103,8 +104,7 @@ export default {
           'text-anchor': 'middle'
         })
         .text(function (d) {
-          if (d.type === 'switch') return d.dpid
-          else return d.mac
+          return d.name
         })
         .style({
           'fill': '#000',
@@ -162,7 +162,7 @@ export default {
       })
     },
     updateTopology: function () {
-      const socket = new WebSocket(config.wsTopoUrl)
+      const socket = new WebSocket(wsTopoUrl)
       let timer = 0
       socket.onopen = () => {
         console.log('socket open')
@@ -174,11 +174,13 @@ export default {
         }
         timer = setTimeout(() => {
           this.getTopology()
-          swal({
-            title: '注意',
-            text: '拓扑变更',
-            icon: 'warning'
-          })
+          if (data.method === 'event_link_delete') {
+            swal({
+              title: '注意',
+              text: '链路发生故障',
+              icon: 'warning'
+            })
+          }
         }, 1000)
         socket.send(JSON.stringify({
           'id': data.id,
