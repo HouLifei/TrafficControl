@@ -1,6 +1,10 @@
 <template>
   <div class="flow-info">
     <div class="row">
+      <div class="column-6 chart" ref="flowBar"></div>
+      <div class="column-6 chart" ref="flowBroken"></div>
+    </div>
+    <div class="row">
       <div class="column-12">
         <h5>流表</h5>
         <table class="flow-table">
@@ -39,10 +43,6 @@
           </tbody>
         </table>
       </div>
-    </div>
-    <div class="row">
-      <div class="column-6 chart" ref="flowBar"></div>
-      <div class="column-6 chart" ref="flowBroken"></div>
     </div>
   </div>
 </template>
@@ -197,6 +197,10 @@
 <style scoped lang="less">
 
   .flow-info {
+    h5 {
+      font-size: 1.3rem;
+      margin:20px;
+    }
     .chart {
       min-height: 350px;
     }
@@ -219,6 +223,4 @@
       width: 8%;
     }
   }
-
-
 </style>

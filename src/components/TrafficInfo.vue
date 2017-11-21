@@ -12,8 +12,8 @@
     </div>
 
     <template v-for="item in switchList" v-if=" item == select ">
-      <flow-info  v-bind:dpid="select"></flow-info>
       <port-info  v-bind:dpid="select"></port-info>
+      <flow-info  v-bind:dpid="select"></flow-info>
     </template>
   </div>
 </template>

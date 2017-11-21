@@ -6,7 +6,7 @@
         <table class="port-table">
           <thead>
           <tr>
-            <td class="am-text-center">ID</td>
+            <td class="am-text-center">端口ID</td>
             <td>接收数据包</td>
             <td>发送数据包</td>
             <td>接收字节数</td>
@@ -17,7 +17,7 @@
           </thead>
           <tbody>
           <tr v-for="port in portInfo">
-            <td class="center">eth{{ port.port_no }}</td>
+            <td class="center">{{ port.port_no }}</td>
             <td>{{ port.rx_packets }}</td>
             <td>{{ port.tx_packets }}</td>
             <td>{{ port.rx_bytes }}</td>

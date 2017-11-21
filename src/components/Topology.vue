@@ -5,20 +5,17 @@
   </div>
 </template>
 <script>
-import d3 from 'd3'
 import swal from 'sweetalert'
-const width = 470
-const height = 600
-const force = d3.layout.force().linkDistance(150).charge(-600).size([width, height])
-const zoom = d3.behavior.zoom().scaleExtent([1, 3])
+import echarts from 'echarts'
 export default {
   name: 'topology',
   data: function () {
     return {
+      topoChart: {}
     }
   },
   mounted: function () {
-    this.initTopology(this.$refs.topology)
+    this.initTopology()
     this.getTopology()
     this.updateTopology()
   },
@@ -26,143 +23,133 @@ export default {
     getTopology: function () {
       Promise.all([this.$ajax.get('/topology/switches'), this.$ajax.get('/topology/hosts'), this.$ajax.get('/topology/links')])
         .then(([switches, hosts, links]) => {
-          const data = {nodes: [], links: []}
-          const nodeList = []
+          const data = {nodes: [], edges: []}
+          const nodeLink = {}
           for (let key of switches.data) {
-            data.nodes.push({dpid: key.dpid, type: 'switch', name: switchMap[key.dpid]})
-            nodeList.push(key.dpid)
+            data.nodes.push({id: key.dpid, type: 'switch', name: switchMap[key.dpid]})
           }
           for (let key of hosts.data) {
             if (key.ipv4.length > 0) {
-              data.nodes.push({mac: key.mac, type: 'host', name: hostMap[key.ipv4[0]]})
-              nodeList.push(key.mac)
-              data.links.push({source: nodeList.indexOf(key.port.dpid), target: nodeList.indexOf(key.mac), source_port: parseInt(key.port.port_no)})
+              const switchName = switchMap[key.port.dpid]
+              const hostName = hostMap[key.ipv4[0]]
+              data.nodes.push({id: key.ipv4[0], type: 'host', name: hostName})
+              data.edges.push({source: key.port.dpid, target: key.ipv4[0]})
+              if (nodeLink[switchName]) {
+                nodeLink[switchName].push(`${switchName}-${parseInt(key.port.port_no)}--${hostName}-0`)
+              } else {
+                nodeLink[switchName] = [`${switchName}-${parseInt(key.port.port_no)}--${hostName}-0`]
+              }
             }
           }
           for (let key of links.data) {
-            data.links.push({source: nodeList.indexOf(key.src.dpid), target: nodeList.indexOf(key.dst.dpid), 'source_port': parseInt(key.src.port_no)})
+            const switchName = switchMap[key.src.dpid]
+            data.edges.push({source: key.src.dpid, target: key.dst.dpid})
+            if (nodeLink[switchName]) {
+              nodeLink[switchName].push(`${switchName}-${parseInt(key.src.port_no)}--${switchMap[key.dst.dpid]}-${parseInt(key.dst.port_no)}`)
+            } else {
+              nodeLink[switchName] = [`${switchName}-${parseInt(key.src.port_no)}--${switchMap[key.dst.dpid]}-${parseInt(key.dst.port_no)}`]
+            }
           }
-          return data
-        }).then(data => {
-          this.showTopology(data)
+          return [data, nodeLink]
+        }).then(result => {
+          this.showTopology(...result)
         }).catch(function (error) {
           console.log(error)
         })
     },
-    initTopology: function (id) {
-      const svg = d3.select(id).append('svg')
-        .attr('width', width)
-        .attr('height', height)
-        .attr('viewBox', `0 0 ${width} ${height}`)
-        .attr('preserveAspectRatio', 'xMidYMid meet')
-        .call(zoom)
-      const container = this.container = svg.append('g')
-      zoom.on('zoom', function () {
-        const e = d3.event
-        const tx = Math.min(0, Math.max(e.translate[0], width - width * e.scale))
-        const ty = Math.min(0, Math.max(e.translate[1], height - height * e.scale))
-        zoom.translate([tx, ty])
-        container.attr('transform', `translate( ${tx}, ${ty} ), scale( ${e.scale} )`)
-      })
+    initTopology: function () {
+      this.topoChart = echarts.init(this.$refs.topology)
+      const options = {
+        animation: false,
+        tooltip: {},
+        series: [
+          {
+            type: 'graph',
+            layout: 'force',
+            force: {
+              layoutAnimation: false,
+              repulsion: 100,
+              edgeLength: 100
+            },
+            hoverAnimation: false,
+            focusNodeAdjacency: true,
+            draggable: true,
+            nodeScaleRatio: 0,
+            roam: true,
+            lineStyle: {
+              normal: {
+                width: 1,
+                smooth: true,
+                opacity: 0.7
+              }
+            },
+            label: {
+              normal: {
+                position: 'bottom',
+                show: true,
+                color: '#000',
+                distance: 2
+              }
+            },
+            tooltip: {
+              position: 'right'
+            }
+          }
+        ]
+      }
+      this.topoChart.setOption(options)
     },
-    showTopology: function (data) {
-      force.nodes(data.nodes).links(data.links).start()
-      this.container.selectAll('*').remove()
-      const link = this.container.selectAll('line')
-        .data(data.links)
-        .enter().append('line')
-        .style('stroke', '#000')
-        .style('stroke-width', 1)
-
-      const node = this.container.selectAll('.port_name')
-        .data(data.nodes)
-        .enter().append('g')
-        .attr({
-          'class': 'port_name',
-          'cx': function (d) {
-            return d.x
-          },
-          'cy': function (d) {
-            return d.y
+    showTopology: function (data, nodeLink) {
+      const options = {
+        series: [
+          {
+            type: 'graph',
+            data: data.nodes.map(function (node) {
+              const imgUrl = 'image://' + (node.type === 'switch' ? require('../assets/img/switch.png') : require('../assets/img/host.png'))
+              const size = node.type === 'switch' ? [50, 25] : [50, 50]
+              return {
+                id: node.id,
+                name: node.name,
+                symbol: imgUrl,
+                symbolSize: size,
+                itemStyle: {
+                  normal: {
+                    opacity: 0.7,
+                    color: '#000'
+                  }
+                }
+              }
+            }),
+            edges: data.edges.map(function (edge) {
+              return {
+                source: edge.source,
+                target: edge.target,
+                lineStyle: {
+                  normal: {
+                    color: '#000'
+                  }
+                }
+              }
+            }),
+            tooltip: {
+              formatter: function (params) {
+                const name = params.data.name
+                const links = nodeLink[name]
+                if (links) {
+                  return `${name}<br>dpid: ${params.data.id}<br>连接关系<br>${links.join('<br>')}`
+                } else {
+                  return `${name}<br>ip: ${params.data.id}`
+                }
+              }
+            }
           }
-        })
-        .call(force.drag)
-      node.append('image')
-        .attr({
-          'xlink:href': function (d) {
-            if (d.type === 'switch') return require('../assets/img/switch.png')
-            else return require('../assets/img/host.png')
-          },
-          'height': 40,
-          'width': 40,
-          'x': -20,
-          'y': -20
-        })
-      node.append('text')
-        .attr({
-          'y': 25,
-          'text-anchor': 'middle'
-        })
-        .text(function (d) {
-          return d.name
-        })
-        .style({
-          'fill': '#000',
-          'font-size': '10px'
-        })
-      const port = this.container.selectAll('.port')
-        .data(data.links)
-        .enter()
-        .append('text')
-        .style({
-          'fill': '#000',
-          'font-size': '10px'
-        })
-        .attr({
-          'class': 'port',
-          'dx': 0,
-          'dy': 0
-        })
-        .text(function (d) {
-          return d.source_port
-        })
-
-      force.on('tick', function () {
-        node.attr({
-          'cx': function (d) {
-            return d.x
-          },
-          'cy': function (d) {
-            return d.y
-          },
-          'transform': function (d) {
-            return `translate(${d.x}, ${d.y})`
-          }
-        })
-
-        link.attr('x1', function (d) {
-          return d.source.x
-        })
-          .attr('y1', function (d) {
-            return d.source.y
-          })
-          .attr('x2', function (d) {
-            return d.target.x
-          })
-          .attr('y2', function (d) {
-            return d.target.y
-          })
-
-        port.attr('x', function (d) {
-          return d.source.x + 15 * (d.target.x - d.source.x) / Math.sqrt(Math.pow((d.target.x - d.source.x), 2) + Math.pow((d.target.y - d.source.y), 2))
-        })
-          .attr('y', function (d) {
-            return d.source.y + 15 * (d.target.y - d.source.y) / Math.sqrt(Math.pow((d.target.x - d.source.x), 2) + Math.pow((d.target.y - d.source.y), 2))
-          })
-      })
+        ]
+      }
+      this.topoChart.setOption(options)
     },
     updateTopology: function () {
       const socket = new WebSocket(wsTopoUrl)
+      console.log('test')
       let timer = 0
       socket.onopen = () => {
         console.log('socket open')
@@ -204,6 +191,10 @@ export default {
       font-size: 1.5rem;
       margin-bottom: 15px;
       color: #5eb95e;
+    }
+    #topology {
+      width: 400px;
+      height: 600px;
     }
   }
 </style>

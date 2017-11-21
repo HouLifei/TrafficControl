@@ -8,13 +8,13 @@
     <table class="strategy-table center">
             <thead>
             <tr>
-              <td>Src IP</td>
-              <td>Dst IP</td>
-              <td>Src Port</td>
-              <td>Dst Port</td>
-              <td>Proto</td>
-              <td>Priority</td>
-              <td>Bandwidth</td>
+              <td>源IP</td>
+              <td>目的IP</td>
+              <td>源端口</td>
+              <td>目的端口</td>
+              <td>协议</td>
+              <td>优先级</td>
+              <td>带宽</td>
               <td></td>
             </tr>
             </thead>

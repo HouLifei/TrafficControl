@@ -14,15 +14,15 @@
               <legend>匹配域</legend>
               <div class="row">
                 <div class="column-4 input-group">
-                  <label for="srcIP">Src IP</label>
+                  <label for="srcIP">源IP</label>
                   <input id="srcIP" v-verify:ip="srcIP" placeholder="0.0.0.0" v-model.lazy="srcIP"/>
                 </div>
                 <div class="column-4 input-group">
-                  <label for="dstIP">Dst IP</label>
+                  <label for="dstIP">目的IP</label>
                   <input id="dstIP" v-verify:ip="dstIP"  placeholder="0.0.0.0" v-model.lazy="dstIP"/>
                 </div>
                 <div class="column-4 input-group">
-                  <label for="protocol">Protocol</label>
+                  <label for="protocol">协议</label>
                   <select id="protocol" v-model="protocol">
                     <option value="TCP">TCP</option>
                     <option value="UDP">UDP</option>
@@ -32,11 +32,11 @@
               <br>
               <div class="row">
                 <div class="column-4 input-group">
-                  <label for="srcPort">Src Port</label>
+                  <label for="srcPort">源端口</label>
                   <input id="srcPort" v-verify:num="srcPort" placeholder="0" type="number" v-model.lazy="srcPort"/>
                 </div>
                 <div class="column-4 input-group">
-                  <label for="dstPort">Dst Port</label>
+                  <label for="dstPort">目的端口</label>
                   <input id="dstPort" v-verify:num="dstPort" placeholder="0" type="number" v-model.lazy="dstPort"/>
                 </div>
               </div>
@@ -45,15 +45,15 @@
               <legend>策略</legend>
               <div class="row">
                 <div class="column-4 input-group">
-                  <label for="priority">Priority</label>
+                  <label for="priority">优先级</label>
                   <select id="priority" v-model="priority">
-                    <option value="0">0</option>
-                    <option value="1">1</option>
-                    <option value="2">2</option>
+                    <option value="0">低</option>
+                    <option value="1">中</option>
+                    <option value="2">高</option>
                   </select>
                 </div>
                 <div class="column-4 input-group">
-                  <label for="bandwidth">Bandwidth</label>
+                  <label for="bandwidth">带宽</label>
                   <input id="bandwidth" v-verify:num="bandwidth" v-model.lazy="bandwidth" type="number">
                 </div>
               </div>
